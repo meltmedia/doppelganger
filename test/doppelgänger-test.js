@@ -23,7 +23,7 @@ describe("proxy", function () {
 
   // test that proxy supports all HTTP methods that we care about
   _.each(["GET","POST","PUT","DELETE","OPTIONS","TRACE"], function (method) {
-    it("should proxy requests with method " + method, function (method) {
+    it("should proxy requests with method " + method, function () {
       return function (done) {
         helper.httpRequest({"host": "localhost", "port": proxyPort, "method": method,
           "path": "/ok"
@@ -33,7 +33,7 @@ describe("proxy", function () {
           done();
         });
       }; 
-    }(method));
+    }());
   });
 
   it("should proxy 404 responses", function(done) {
