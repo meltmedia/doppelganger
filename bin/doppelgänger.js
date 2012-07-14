@@ -11,6 +11,6 @@ var _ = require("underscore"),
 
 console.log("### doppelgänger starting...");
 
-proxy.proxy({"targetHost":"www.meltmedia.com", "targetPort":80, "proxyPort":8080});
+proxy.proxy({"targetHost": "www.meltmedia.com", "targetPort": 80, "proxyPort": 8080});
 
 console.log("### doppelgänger started!");
