@@ -7,10 +7,45 @@
 
 var _ = require("underscore"),
   http = require("http"),
-  proxy = require("../lib/proxy.js");
+  proxy = require("../lib/proxy.js"),
+  md5 = require("md5"),
+  fs = require("fs"),
+  log = [],
+  opts = require('tav').set({
+    host: {
+        note: 'target host'
+    },
+    port: {
+        note: 'target port',
+        value: 80
+    },
+    proxyPort: {
+        note: 'proxy port',
+        value: 8080
+    }
+}, "doppelgänger");
 
 console.log("### doppelgänger starting...");
 
-proxy.proxy({"targetHost": "www.meltmedia.com", "targetPort": 80, "proxyPort": 8080});
+proxy.proxy({"targetHost": opts.host, "targetPort": opts.port, "proxyPort": opts.proxyPort});
+
+proxy.setSawRequestAndResponse(function (request, requestBody, response, responseBody) {
+  var key = md5.digest_s(request.url + requestBody);
+  log.push({"request":{"headers":request.headers, "url": request.url, "method": request.method,
+    "httpVersion": request.httpVersion }, 
+    "requestBody":requestBody, 
+    "response": {"statusCode": response.statusCode, "headers": response.headers}, 
+    "responseBody": responseBody});
+  console.log("URL: " + request.url + " STATUS: " + response.statusCode + (requestBody === ""? "" : " DATA: " + requestBody));
+});
+
+/** this goes off when you CTRL-C **/
+/** (unless your environment is goofy) **/
+process.on('SIGINT', function () {
+  fs.writeFile('observations.json', JSON.stringify(log), function (err) {
+    if (err) { throw err; }
+    process.exit(0);
+  });
+});
 
 console.log("### doppelgänger started!");

@@ -19,7 +19,7 @@ see license.txt for details
 
 ### ROADMAP
 1. proxy COMPLETE!
-2. command line arguments
-3. caching
+2. command line arguments COMPLETE!
+3. caching COMPLETE!
 4. cache de/serialization
 5. serialized cache to express app
