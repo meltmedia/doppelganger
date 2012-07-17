@@ -18,8 +18,7 @@ distributed under the terms of the General Public License version 2.0
 see license.txt for details
 
 ### ROADMAP
-1. proxy COMPLETE!
-2. command line arguments COMPLETE!
-3. caching COMPLETE!
-4. cache de/serialization
-5. serialized cache to express app
+1. round out functionality
+2. implement a pleasing user experience
+3. refactoring and testing
+4. polishing
