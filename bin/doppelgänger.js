@@ -13,31 +13,42 @@ var _ = require("underscore"),
   log = [],
   opts = require('tav').set({
     host: {
-        note: 'target host'
+      note: 'target host'
     },
     port: {
-        note: 'target port',
-        value: 80
+      note: 'target port',
+      value: 80
+    },
+    securePort: {
+      note: "secure target port",
+      value: 443
     },
     proxyPort: {
-        note: 'proxy port',
-        value: 8080
+      note: 'proxy port',
+      value: 8080
+    },
+    secureProxyPort: {
+      note: 'secure proxy port',
+      value: 8443
     }
-}, "doppelgänger");
+  }, "doppelgänger"),
+  observationHandler = function (request, requestBody, response, responseBody) {
+    var key = md5.digest_s(request.url + requestBody);
+    log.push({"request":{"headers":request.headers, "url": request.url, "method": request.method,
+      "httpVersion": request.httpVersion }, 
+      "requestBody":requestBody, 
+      "response": {"statusCode": response.statusCode, "headers": response.headers},
+      "responseBody": responseBody});
+    console.log("URL: " + request.url + " STATUS: " + response.statusCode +
+      (requestBody === ""? "" : " DATA: " + requestBody));
+  };
 
 console.log("### doppelgänger starting...");
 
 proxy.proxy({"targetHost": opts.host, "targetPort": opts.port, "proxyPort": opts.proxyPort});
-
-proxy.setSawRequestAndResponse(function (request, requestBody, response, responseBody) {
-  var key = md5.digest_s(request.url + requestBody);
-  log.push({"request":{"headers":request.headers, "url": request.url, "method": request.method,
-    "httpVersion": request.httpVersion }, 
-    "requestBody":requestBody, 
-    "response": {"statusCode": response.statusCode, "headers": response.headers}, 
-    "responseBody": responseBody});
-  console.log("URL: " + request.url + " STATUS: " + response.statusCode + (requestBody === ""? "" : " DATA: " + requestBody));
-});
+proxy.proxy({"targetHost": opts.host, "targetPort": opts.securePort, "proxyPort": opts.secureProxyPort,
+  "ssl": true });
+proxy.setSawRequestAndResponse(observationHandler);
 
 /** this goes off when you CTRL-C **/
 /** (unless your environment is goofy) **/
