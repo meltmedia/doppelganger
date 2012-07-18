@@ -25,8 +25,8 @@ doppelgänger - a web service cloning tool for great justice
 ## MAN
   common arguments
     --quiet -q
-    --verbose -v
-    --version -ver
+    --verbose
+    --version -v
     --help -h
 
   doppelganger observe
