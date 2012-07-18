@@ -6,57 +6,51 @@
 /*jslint indent: 2, nomen: true*/
 
 var _ = require("underscore"),
-  http = require("http"),
-  proxy = require("../lib/proxy.js"),
-  md5 = require("md5"),
+  express = require("express"),
   fs = require("fs"),
-  log = [],
-  opts = require('tav').set({
-    host: {
-      note: 'target host'
-    },
-    port: {
-      note: 'target port',
-      value: 80
-    },
-    securePort: {
-      note: "secure target port",
-      value: 443
-    },
-    proxyPort: {
-      note: 'proxy port',
-      value: 8080
-    },
-    secureProxyPort: {
-      note: 'secure proxy port',
-      value: 8443
+  observations = JSON.parse(fs.readFileSync("observations.json")),
+  app = express.createServer(/*{ "key": fs.readFileSync("ssl/key.pem"),
+  "cert": fs.readFileSync("ssl/cert.pem")}*/);
+
+app.use(function(req, res, next) {
+  var buffer = "";
+  req.on("data", function (chunk) { buffer += chunk; });
+  req.on("end", function (chunk) { req.body = buffer; return next(); });
+});
+app.all('*', function(req, res){
+  var fo = observations;
+
+
+
+  // match method
+  var fo = _.filter(observations, function (o) { return o.request.method === req.method; });
+  // match url
+  fo = _.filter(fo, function (o) { return o.request.url === req.url; });
+  // match body
+  fo = _.filter(fo, function (o) {
+    var parseMethod = function (str) {
+      return _.filter(str.split("&"), function (n) { return n.indexOf("method=") !== -1; })[0].split("=")[1];
     }
-  }, "doppelgänger"),
-  observationHandler = function (request, requestBody, response, responseBody) {
-    var key = md5.digest_s(request.url + requestBody);
-    log.push({"request":{"headers":request.headers, "url": request.url, "method": request.method,
-      "httpVersion": request.httpVersion }, 
-      "requestBody":requestBody, 
-      "response": {"statusCode": response.statusCode, "headers": response.headers},
-      "responseBody": responseBody});
-    console.log("URL: " + request.url + " STATUS: " + response.statusCode +
-      (requestBody === ""? "" : " DATA: " + requestBody));
-  };
-
-console.log("### doppelgänger starting...");
-
-proxy.proxy({"targetHost": opts.host, "targetPort": opts.port, "proxyPort": opts.proxyPort});
-proxy.proxy({"targetHost": opts.host, "targetPort": opts.securePort, "proxyPort": opts.secureProxyPort,
-  "ssl": true });
-proxy.setSawRequestAndResponse(observationHandler);
-
-/** this goes off when you CTRL-C **/
-/** (unless your environment is goofy) **/
-process.on('SIGINT', function () {
-  fs.writeFile('observations.json', JSON.stringify(log), function (err) {
-    if (err) { throw err; }
-    process.exit(0);
+    return parseMethod(o.requestBody) === parseMethod(req.body);
   });
+  // try to find a 2XX response
+  var fog = _.filter(fo, function (o) { return (o.response.statusCode > 199 && o.response.statusCode < 300); });
+  if (fog.length > 0) { fo = fog; }
+  // serve the response, if there is one
+  if(fo.length > 0) {
+    console.log("found matching observation!");
+    var xo = fo[0];
+    _.each(xo.response.headers, function (value, key, list) {
+      res.setHeader(key, value);
+    });
+    res.send(xo.responseBody,xo.response.statusCode);
+  } else {
+    console.log("cannot handle request");
+    res.send("WTF?",404);
+  }
 });
 
-console.log("### doppelgänger started!");
+app.listen(80);
+//app.listen(443);
+
+console.log("### doppelgänger started");

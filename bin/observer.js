@@ -31,7 +31,6 @@ var _ = require("underscore"),
     }
   }, "observer"),
   observationHandler = function (request, requestBody, response, responseBody) {
-    var key = md5.digest_s(request.url + requestBody);
     log.push({"request":{"headers":request.headers, "url": request.url, "method": request.method,
       "httpVersion": request.httpVersion }, 
       "requestBody":requestBody, 
