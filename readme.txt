@@ -1,7 +1,7 @@
 doppelgänger - a web service cloning tool for great justice
 
 ############################################################
-## brought to you by Meltmedia (http://www.meltmedia.com) ##
+## brought to you by meltmedia (http://meltmedia.com) ##
 ############################################################
 
 ## TAO
@@ -56,7 +56,7 @@ doppelgänger - a web service cloning tool for great justice
 bug reports and pull requests gladly accepted through github
 
 ### CREDITS
-created by Kyle W. Cartmell (kyle.cartmell@meltmedia.com) for Meltmedia
+created by Kyle W. Cartmell (kyle.cartmell@meltmedia.com) for meltmedia
 
 ### LICENSE
 distributed under the terms of the General Public License version 2.0
